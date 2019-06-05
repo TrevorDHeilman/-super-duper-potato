@@ -1,0 +1,92 @@
+package com.trevor.delegates;
+
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.Set;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+
+import org.apache.log4j.Logger;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.trevor.beans.Employee;
+import com.trevor.beans.Request;
+import com.trevor.utils.JsonParseUtil;
+import com.trevor.utils.LogUtil;
+import com.trevor.data.RequestOracle;
+
+public class RequestDelegate implements FrontControllerDelegate {
+	private Logger log = Logger.getLogger(Request.class);
+	private ObjectMapper om = new ObjectMapper();
+	private RequestOracle ro = new RequestOracle();
+	
+	@Override
+	public void process(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
+		String path = (String) req.getAttribute("path");
+		log.trace("path: "+path);
+		if(path==null||"".equals(path))
+			collectionOperations(req,resp);
+		else {
+			try {
+				requestTimes(req,resp,Integer.parseInt(path.toString()));
+			} catch(NumberFormatException e) {
+				resp.sendError(HttpServletResponse.SC_BAD_REQUEST);
+			}
+		}
+			
+	}
+
+	private void requestTimes(HttpServletRequest req, HttpServletResponse resp, int requestId) throws IOException {
+		HttpSession session = req.getSession();
+		Employee emp = (Employee) session.getAttribute("loggedEmployee");
+		log.trace("Operating on a specific request with id: "+ requestId);
+		PrintWriter writer = resp.getWriter();
+		Request newRequest;
+		switch(req.getMethod()) {
+		case "GET":
+			newRequest = ro.getRequestById(requestId);
+			resp.getWriter().write(om.writeValueAsString(newRequest));
+			return;
+		case "PUT":
+			// Update the request in the database
+			newRequest = JsonParseUtil.parseJsonInput(req.getInputStream(), Request.class, resp);
+			ro.updateRequest(newRequest, emp, true);
+			writer.write(om.writeValueAsString(newRequest));
+			return;
+		default:
+			resp.sendError(HttpServletResponse.SC_BAD_REQUEST);
+		}
+	}
+
+	private void collectionOperations(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+		HttpSession session = req.getSession();
+		Employee emp = (Employee) session.getAttribute("loggedEmployee");
+		switch(req.getMethod()) {
+		case "GET": 
+			log.trace("Retrieving all books from the database");
+			Set<Request> requests = ro.getRequests();
+			resp.getWriter().write(om.writeValueAsString(requests));
+			return;
+		case "POST": 
+			log.trace("Post called with book");
+			Request newRequest = JsonParseUtil.parseJsonInput(req.getInputStream(), Request.class, resp);
+			log.trace(newRequest);
+			if(newRequest==null)
+				return;
+			try {
+				// Add the book to the database
+				log.trace("Adding book to the database: "+newRequest);
+				ro.addRequest(newRequest, emp);
+				resp.setStatus(HttpServletResponse.SC_CREATED);
+				resp.getWriter().write(om.writeValueAsString(newRequest));
+			} catch(Exception e) {
+				LogUtil.logException(e, RequestDelegate.class);
+				resp.sendError(HttpServletResponse.SC_CONFLICT);
+			}
+			return;
+		default: resp.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
+		}
+	}
+}
+
