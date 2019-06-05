@@ -48,12 +48,13 @@ public class RequestOracle implements RequestDAO{
 	}
 
 	@Override
-	public Set<Request> getRequests() {
+	public Set<Request> getRequests(Employee emp) {
 		Set<Request> requestList = new HashSet<Request>();
 		log.trace("retrieving all requests from database.");
 		try (Connection conn = cu.getConnection()) {
-			String sql = "select * from request";
+			String sql = "select * from request where employeeid=?";
 			PreparedStatement pstm = conn.prepareStatement(sql);
+			pstm.setInt(1, emp.getEmployeeId());
 			ResultSet rs = pstm.executeQuery();
 			while (rs.next()) {
 				

@@ -7,7 +7,6 @@ window.onload = function(){
 		event.preventDefault();
 		var xhttp = new XMLHttpRequest();
 		xhttp.onreadystatechange=loginSuccess;
-		//xhttp.open("POST", "http//localhost:8080/Project1/login");
 		xhttp.open("POST", baseURL+"login");
 		xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
 		let user = document.getElementById("username").value;

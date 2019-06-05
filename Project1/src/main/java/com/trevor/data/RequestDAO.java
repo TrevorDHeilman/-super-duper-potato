@@ -8,7 +8,7 @@ import com.trevor.beans.Request;
 public interface RequestDAO {
 
 	Request getRequestById(int requestId);
-	Set<Request> getRequests();
+	Set<Request> getRequests(Employee emp);
 	void updateRequest(Request request, Employee emp, boolean newStatus);
 	int addRequest(Request newRequest, Employee emp);
 	void requestFurtherComments(int requestId);

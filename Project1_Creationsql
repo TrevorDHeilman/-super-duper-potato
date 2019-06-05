@@ -1,0 +1,171 @@
+/*******************************************************************************
+   Project1 Database - Version 1.0
+   Script: Project1_Creation.sql
+   Description: Creates and populates the Project 1 database.
+   DB Server: Oracle
+   Author: Trevor Heilman
+********************************************************************************/
+
+/*******************************************************************************
+   Drop database if it exists
+********************************************************************************/
+DROP USER project1 CASCADE;
+
+
+/*******************************************************************************
+   Create database
+********************************************************************************/
+CREATE USER project1
+IDENTIFIED BY p4ssw0rd
+DEFAULT TABLESPACE users
+TEMPORARY TABLESPACE temp
+QUOTA 10M ON users;
+
+GRANT connect to project1;
+GRANT resource to project1;
+GRANT create session TO project1;
+GRANT create table TO project1;
+GRANT create view TO project1;
+
+conn project1/p4ssw0rd
+
+/*******************************************************************************
+   Create Tables
+********************************************************************************/
+CREATE TABLE Employee
+(
+    EmployeeId NUMBER GENERATED ALWAYS AS IDENTITY(START WITH 101 INCREMENT BY 1),
+    Username VARCHAR2(25) UNIQUE NOT NULL,
+    Password VARCHAR2(25) NOT NULL,
+    FirstName VARCHAR2(25) NOT NULL,
+    LastName VARCHAR2(25) NOT NULL,
+    EmployeeTitle NUMBER NOT NULL,
+    ReportsTo NUMBER NOT NULL,
+    Department NUMBER NOT NULL,
+    ReimbursementAvailable NUMBER NOT NULL,
+    CONSTRAINT PK_Employee PRIMARY KEY  (EmployeeId)
+);
+
+CREATE TABLE Department
+(
+    DepartmentId NUMBER GENERATED ALWAYS AS IDENTITY(START WITH 1 INCREMENT BY 1),
+    Department VARCHAR2(25) NOT NULL,
+    DepartmentHead NUMBER NOT NULL,
+    CONSTRAINT PK_Department PRIMARY KEY  (DepartmentId)
+);
+
+
+CREATE TABLE EmployeeTitle
+(
+    TitleId NUMBER GENERATED ALWAYS AS IDENTITY(START WITH 1 INCREMENT BY 1),
+    Title VARCHAR2(25) NOT NULL,
+    CONSTRAINT PK_EmployeeTitle PRIMARY KEY  (TitleId)
+);
+
+
+CREATE TABLE Request
+(
+    RequestId NUMBER GENERATED ALWAYS AS IDENTITY(START WITH 1 INCREMENT BY 1),
+    EmployeeId NUMBER NOT NULL,
+    AppliedReimbursement NUMBER NOT NULL,
+    RequestDate DATE,
+    EventDate DATE,
+    StatusId NUMBER DEFAULT 1 NOT NULL,
+    EventType NUMBER NOT NULL,
+    CONSTRAINT PK_Request PRIMARY KEY  (RequestId)   
+);
+
+CREATE TABLE EventType
+(
+    EventId NUMBER GENERATED ALWAYS AS IDENTITY(START WITH 1 INCREMENT BY 1),
+    EventType VARCHAR(50) NOT NULL,
+    ReimbursementPercent NUMBER NOT NULL,
+    CONSTRAINT PK_EventType PRIMARY KEY  (EventId)
+);
+
+CREATE TABLE Status
+(
+    StatusId NUMBER GENERATED ALWAYS AS IDENTITY(START WITH 1 INCREMENT BY 1),
+    Status VARCHAR2(25) NOT NULL,
+    CONSTRAINT PK_StatusKey PRIMARY KEY  (StatusId)
+);
+
+CREATE TABLE RequestStory
+(
+    RequestId NUMBER NOT NULL,
+    EmployeeId NUMBER NOT NULL,
+    EmployeeComment VARCHAR(500)    
+);
+/*******************************************************************************
+   Create Foreign Keys
+********************************************************************************/
+ALTER TABLE Employee ADD CONSTRAINT FK_DepartmentId
+    FOREIGN KEY (Department) REFERENCES Department (DepartmentId) On Delete Cascade;
+
+ALTER TABLE Employee ADD CONSTRAINT FK_EmployeeTitleId
+    FOREIGN KEY (EmployeeTitle) REFERENCES EmployeeTitle (TitleId) On Delete Cascade; 
+
+ALTER TABLE Request ADD CONSTRAINT FK_EmployeeId
+    FOREIGN KEY (EmployeeId) REFERENCES Employee (EmployeeId) On Delete Cascade;
+    
+/*******************************************************************************
+   Populate Tables
+********************************************************************************/
+INSERT INTO Department (Department, DepartmentHead) VALUES ('Training', 2);
+INSERT INTO Department (Department, DepartmentHead) VALUES ('Human Resource Management', 3);
+INSERT INTO Department (Department, DepartmentHead) VALUES ('Management', 1);
+
+INSERT INTO EmployeeTitle (Title) VALUES ('CEO');
+INSERT INTO EmployeeTitle (Title) VALUES ('CTO');
+INSERT INTO EmployeeTitle (Title) VALUES ('Dir. of Human Resources');
+INSERT INTO EmployeeTitle (Title) VALUES ('Lead Trainer');
+INSERT INTO EmployeeTitle (Title) VALUES ('Sr. Trainer');
+INSERT INTO EmployeeTitle (Title) VALUES ('Human Resources');
+INSERT INTO EmployeeTitle (Title) VALUES ('Associate');
+
+INSERT INTO Employee (Username, Password, Firstname, LastName, EmployeeTitle, ReportsTo, Department, ReimbursementAvailable)
+          VALUES ('bob', 'pass', 'Bob', 'Roberts', 1, 100, 3, 1000);
+INSERT INTO Employee (Username, Password, Firstname, LastName, EmployeeTitle, ReportsTo, Department, ReimbursementAvailable)
+          VALUES ('will', 'pass', 'Bill', 'Roberts', 2, 101, 1, 750);
+INSERT INTO Employee (Username, Password, Firstname, LastName, EmployeeTitle, ReportsTo, Department, ReimbursementAvailable)
+          VALUES ('george', 'pass', 'George', 'Fenton', 3, 101, 2, 500);   
+INSERT INTO Employee (Username, Password, Firstname, LastName, EmployeeTitle, ReportsTo, Department, ReimbursementAvailable)
+          VALUES ('matt', 'pass', 'Matt', 'Smith', 4, 102, 1, 200);
+INSERT INTO Employee (Username, Password, Firstname, LastName, EmployeeTitle, ReportsTo, Department, ReimbursementAvailable)
+          VALUES ('andy', 'pass', 'Andy', 'Miller', 5, 102, 1, 1000);
+INSERT INTO Employee (Username, Password, Firstname, LastName, EmployeeTitle, ReportsTo, Department, ReimbursementAvailable)
+          VALUES ('austin', 'pass', 'Austin', 'Arnold', 7, 104, 1, 100);
+INSERT INTO Employee (Username, Password, Firstname, LastName, EmployeeTitle, ReportsTo, Department, ReimbursementAvailable)
+          VALUES ('connor', 'pass', 'Connor', 'Thomas', 7, 104, 1, 1000);           
+INSERT INTO Employee (Username, Password, Firstname, LastName, EmployeeTitle, ReportsTo, Department, ReimbursementAvailable)
+          VALUES ('ross', 'pass', 'Ross', 'Ssor', 4, 102, 1, 1000);
+INSERT INTO Employee (Username, Password, Firstname, LastName, EmployeeTitle, ReportsTo, Department, ReimbursementAvailable)
+          VALUES ('joey', 'pass', 'Joey', 'Yeoj', 6, 103, 2, 1000);
+INSERT INTO Employee (Username, Password, Firstname, LastName, EmployeeTitle, ReportsTo, Department, ReimbursementAvailable)
+          VALUES ('phoebe', 'pass', 'Phoebe', 'Ebeohp', 7, 105, 1, 1000);
+INSERT INTO Employee (Username, Password, Firstname, LastName, EmployeeTitle, ReportsTo, Department, ReimbursementAvailable)
+          VALUES ('rachel', 'pass', 'Rachel', 'lehcar', 6, 103, 2, 1000);           
+          
+
+          
+INSERT INTO EventType (EventType, ReimbursementPercent) VALUES ('University Course', .8);
+INSERT INTO EventType (EventType, ReimbursementPercent) VALUES ('Seminar', .6);
+INSERT INTO EventType (EventType, ReimbursementPercent) VALUES ('Certification Preparation Course', .75);
+INSERT INTO EventType (EventType, ReimbursementPercent) VALUES ('Certification', 1);
+INSERT INTO EventType (EventType, ReimbursementPercent) VALUES ('Technical Training', .9);
+INSERT INTO EventType (EventType, ReimbursementPercent) VALUES ('Other', .3);
+
+INSERT INTO Status (Status) VALUES ('Pending');
+INSERT INTO Status (Status) VALUES ('Accepted');
+INSERT INTO Status (Status) VALUES ('Declined');
+INSERT INTO Status (Status) VALUES ('BenCo');
+
+INSERT INTO Request (EmployeeId, AppliedReimbursement, RequestDate, EventDate, EventType) VALUES (106, 450, TO_DATE('05/25/2019', 'mm/dd/yyyy'), TO_DATE('06/25/2019', 'mm/dd/yyyy'), 4);
+INSERT INTO Request (EmployeeId, AppliedReimbursement, RequestDate, EventDate, EventType) VALUES (111, 750, TO_DATE('05/25/2019', 'mm/dd/yyyy'), TO_DATE('06/01/2019', 'mm/dd/yyyy'), 1);
+INSERT INTO Request (EmployeeId, AppliedReimbursement, RequestDate, EventDate, EventType) VALUES (107, 750, TO_DATE('05/25/2019', 'mm/dd/yyyy'), TO_DATE('06/01/2019', 'mm/dd/yyyy'), 1);
+
+INSERT INTO RequestStory (RequestId, EmployeeId) VALUES (1, 104);
+INSERT INTO RequestStory (RequestId, EmployeeId) VALUES (1, 102);
+INSERT INTO RequestStory (RequestId, EmployeeId) VALUES (2, 104);
+commit;
+exit;

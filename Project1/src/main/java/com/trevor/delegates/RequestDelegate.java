@@ -65,7 +65,7 @@ public class RequestDelegate implements FrontControllerDelegate {
 		switch(req.getMethod()) {
 		case "GET": 
 			log.trace("Retrieving all books from the database");
-			Set<Request> requests = ro.getRequests();
+			Set<Request> requests = ro.getRequests(emp);
 			resp.getWriter().write(om.writeValueAsString(requests));
 			return;
 		case "POST": 
