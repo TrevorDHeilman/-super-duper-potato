@@ -4,6 +4,10 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -58,6 +62,36 @@ public class RequestOracle implements RequestDAO{
 			ResultSet rs = pstm.executeQuery();
 			while (rs.next()) {
 				
+				Request request = new Request();
+				request.setRequestId(rs.getInt("requestid"));
+				request.setEmployeeId(rs.getInt("employeeid"));
+				request.setAppliedreimbursement(rs.getInt("appliedreimbursement"));
+				request.setRequestDate(rs.getDate("requestdate"));
+				request.setEventDate(rs.getDate("eventdate"));
+				request.setStatus(rs.getString("statusid"));
+				request.setEventType(rs.getInt("eventtype"));
+				log.trace("Adding Request to the list");
+				requestList.add(request);
+			}
+		} catch (Exception e) {
+			LogUtil.logException(e, RequestOracle.class);
+		}
+		log.trace(requestList);
+		return requestList;
+	}
+	
+	@Override
+	public Set<Request> getRequests2(Employee emp) {
+		Set<Request> requestList = new HashSet<Request>();
+		log.trace("retrieving all requests from database.");
+		try (Connection conn = cu.getConnection()) {
+			String sql = "select * from request where statusid=?";
+			PreparedStatement pstm = conn.prepareStatement(sql);
+			pstm.setInt(1, emp.getEmployeeId());
+			ResultSet rs = pstm.executeQuery();
+			while (rs.next()) {
+				
+				log.trace("Getting in result set");
 				Request request = new Request();
 				request.setRequestId(rs.getInt("requestid"));
 				request.setEmployeeId(rs.getInt("employeeid"));
@@ -139,20 +173,25 @@ public class RequestOracle implements RequestDAO{
 	@Override
 	public int addRequest(Request newRequest, Employee emp) {
 		int key = 0;
-		log.trace("adding book to the database: "+ newRequest);
+		String datePattern = "dd/MM/yyyy";
+		DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern(datePattern);
+		log.trace(LocalDateTime.now().format(dateFormatter).toString());
+		log.trace("adding request to the database: "+ newRequest);
 		Connection conn = cu.getConnection();
 		try {
 			conn.setAutoCommit(false);
 			String sql = "insert into request(employeeid, appliedreimbursement, requestdate, "
-					+ "eventdate, statusid, eventtype) values (?,?,?,?,?,?)";
-			String[] keys = {"id"};
-			PreparedStatement pstm = conn.prepareStatement(sql, keys);
+					+ "eventdate, statusid, eventtype) values (?,?,TO_DATE(?, 'mm/dd/yyyy'),?,?,?)";
+			
+			PreparedStatement pstm = conn.prepareStatement(sql);
 			pstm.setInt(1, emp.getEmployeeId());
 			pstm.setInt(2, newRequest.getAppliedreimbursement());
-			pstm.setString(3, newRequest.getRequestDate());
-			pstm.setString(4, newRequest.getEventDate());
-			pstm.setString(5, newRequest.getStatus());
-			pstm.setInt(6, newRequest.getEventType());
+			pstm.setString(3, LocalDateTime.now().format(dateFormatter).toString());
+			pstm.setDate(4, newRequest.getDEventDate());
+			pstm.setInt(5, emp.getReportsTo());
+			pstm.setInt(6, newRequest.getEventType());	
+			
+			pstm.executeQuery();
 			
 		} catch (SQLException e) {
 			LogUtil.rollback(e, conn, RequestOracle.class);

@@ -16,16 +16,13 @@ window.onload = function(){
 		function loginSuccess() {
 			if(xhttp.readyState===4 && xhttp.status===200) {
 				var data = JSON.parse(xhttp.responseText);
-				console.log(data);
 				if(data){
 					window.location.href=baseURL +"static/home.html";
 				}
-				/*employee=data.employee;
-				document.getElementById("authUserName").innerHTML=employee.firstname+" "+employee.lastname+", "+employee.title;	
-				*/}
 			}
-		});
-	}
+		}
+	});
+}
 
 
 /*

@@ -47,11 +47,17 @@ public class Request {
 	public String getRequestDate() {
 		return requestDate.toString();
 	}
+	public Date getDRequestDate() {
+		return requestDate;
+	}
 	public void setRequestDate(Date requestDate) {
 		this.requestDate = requestDate;
 	}
 	public String getEventDate() {
 		return eventDate.toString();
+	}
+	public Date getDEventDate() {
+		return eventDate;
 	}
 	public void setEventDate(Date eventDate) {
 		this.eventDate = eventDate;

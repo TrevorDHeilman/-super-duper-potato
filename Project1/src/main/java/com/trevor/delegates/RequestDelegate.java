@@ -7,7 +7,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-
 import org.apache.log4j.Logger;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.trevor.beans.Employee;
@@ -64,27 +63,51 @@ public class RequestDelegate implements FrontControllerDelegate {
 		Employee emp = (Employee) session.getAttribute("loggedEmployee");
 		switch(req.getMethod()) {
 		case "GET": 
-			log.trace("Retrieving all books from the database");
-			Set<Request> requests = ro.getRequests(emp);
-			resp.getWriter().write(om.writeValueAsString(requests));
-			return;
-		case "POST": 
-			log.trace("Post called with book");
-			Request newRequest = JsonParseUtil.parseJsonInput(req.getInputStream(), Request.class, resp);
-			log.trace(newRequest);
-			if(newRequest==null)
+//			log.trace("Retrieving all requests from the database");
+//			Set<Request> requests = ro.getRequests(emp);
+//			resp.getWriter().write(om.writeValueAsString(requests));
+//			return;
+		case "POST":
+			String switchVar = req.getParameter("type");
+			log.trace("switchVar " + switchVar);
+			if(switchVar==null) {
+				log.trace("Post called with requests");
+				Request newRequest = JsonParseUtil.parseJsonInput(req.getInputStream(), Request.class, resp);
+				log.trace(newRequest);
+				log.trace(newRequest==null);
+				if(newRequest==null)
+					return;
+				try {
+					// Add the book to the database
+					log.trace("Adding request to the database: "+newRequest);
+					ro.addRequest(newRequest, emp);
+					resp.setStatus(HttpServletResponse.SC_CREATED);
+					
+					//resp.getWriter().write(om.writeValueAsString(newRequest));
+				} catch(Exception e) {
+					LogUtil.logException(e, RequestDelegate.class);
+					resp.sendError(HttpServletResponse.SC_CONFLICT);
+				}
 				return;
-			try {
-				// Add the book to the database
-				log.trace("Adding book to the database: "+newRequest);
-				ro.addRequest(newRequest, emp);
-				resp.setStatus(HttpServletResponse.SC_CREATED);
-				resp.getWriter().write(om.writeValueAsString(newRequest));
-			} catch(Exception e) {
-				LogUtil.logException(e, RequestDelegate.class);
-				resp.sendError(HttpServletResponse.SC_CONFLICT);
+			
+				
 			}
-			return;
+			else if("0".equals(switchVar)) {
+				
+				log.trace("Retrieving all requests from the database");
+				Set<Request> requests = ro.getRequests(emp);
+				log.trace("Request = null:" + requests==null);
+				resp.getWriter().write(om.writeValueAsString(requests));
+				return;
+			}
+			else if ("1".equals(switchVar)) {
+				
+				log.trace("Retrieving all requests from the database");
+				Set<Request> requests = ro.getRequests2(emp);
+				log.trace("Request = null:" + requests==null);
+				resp.getWriter().write(om.writeValueAsString(requests));
+				return;
+			}
 		default: resp.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
 		}
 	}
