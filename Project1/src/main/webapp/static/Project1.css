@@ -5,7 +5,7 @@ body{
 	text-align: center;
 }
 
-form{
+#form{
 	margin: auto;
 	height: 10%;
   	width: 50%;
@@ -30,4 +30,17 @@ input[type=password] {
   padding: 12px 20px;
   margin: 8px 0;
   box-sizing: border-box;
+}
+
+#logoutbutton{
+	align: right;
+	margin-right: 0;
+}
+
+td{
+	width: 20%;
+}
+
+th{
+	width: 20%;
 }
