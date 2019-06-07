@@ -65,6 +65,7 @@ function getRequestHistory(i){
 function submitRequestComment(i){
 	var baseURL="/Project1/";
 	let selectEmployee = document.getElementById("requestidselect").value;
+	console.log("i is " + i);
 	var xhttp = new XMLHttpRequest();
     xhttp.onreadystatechange = displayComment;
     xhttp.open("POST", baseURL + "comments");

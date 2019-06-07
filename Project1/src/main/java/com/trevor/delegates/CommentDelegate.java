@@ -53,7 +53,9 @@ public class CommentDelegate implements FrontControllerDelegate {
 			else if("3".equals(switchVar)) {
 				
 				String newRequestid = req.getParameter("requestid");
+				log.trace("newrequest" + newRequestid);
 				String selectedEmployee = req.getParameter("selectedEmployee");
+				log.trace("selected employee" +selectedEmployee);
 				ro.requestFurtherComments(Integer.parseInt(newRequestid), Integer.parseInt(selectedEmployee), emp);
 				return;
 			}

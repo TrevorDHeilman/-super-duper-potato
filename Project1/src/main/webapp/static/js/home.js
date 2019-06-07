@@ -1,5 +1,6 @@
 window.onload = function () {
     getRequests(0);
+    console.log("Here here here222");
     
     var button = document.getElementById("newrequestbutton");
 	button.addEventListener('click', function(event){
@@ -10,6 +11,8 @@ window.onload = function () {
 	var updatebutton = document.getElementById("submitupdatebutton");
 	updatebutton.addEventListener('click', function(event){
 		event.preventDefault();
+		console.log(document.getElementById("eventtype").value);
+		console.log("Here here here");
 		updateRequest(4);
 	})
 	
@@ -163,11 +166,13 @@ function addListToTable(tr, list, parser){
 }
 
 function updateRequest(i){
+	console.log("gets here");
 	console.log(document.getElementById("eventtype").value);
 	let strRequestId = document.getElementById("requestidselect").value;
-	
+	console.log(document.getElementById("eventtype").value == 'Request Comment');
 	if(document.getElementById("eventtype").value == 'Request Comment'){
 		window.location.href="http://localhost:8080/Project1/static/comment.html?requestid="+strRequestId;
+		return;
 	}
 	
 	var baseURL="/Project1/";

@@ -159,7 +159,7 @@ public class RequestOracle implements RequestDAO{
 					
 						pstm.setInt(1,2);
 					}
-					else if(emp.getEmployeeId() == rs.getInt("reportsto") && !deptHeadKeys.contains(emp.getReportsTo())){
+					else if(emp.getEmployeeId() == rs.getInt("reportsto")) { //&& !deptHeadKeys.contains(emp.getReportsTo())){
 						
 						pstm.setInt(1, emp.getReportsTo());
 					}
