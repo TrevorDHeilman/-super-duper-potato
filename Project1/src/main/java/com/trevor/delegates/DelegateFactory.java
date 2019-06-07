@@ -13,6 +13,7 @@ public class DelegateFactory {
 		
 		delegateMap.put("login", new LoginDelegate());		
 		delegateMap.put("requests", new RequestDelegate());
+		delegateMap.put("comments", new CommentDelegate());
 	}
 
 	public static synchronized DelegateFactory getInstance() {

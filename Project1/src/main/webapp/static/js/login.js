@@ -5,6 +5,7 @@ window.onload = function(){
 	
 	button.addEventListener('click', function(event){
 		event.preventDefault();
+		logout();
 		var xhttp = new XMLHttpRequest();
 		xhttp.onreadystatechange=loginSuccess;
 		xhttp.open("POST", baseURL+"login");
@@ -23,6 +24,23 @@ window.onload = function(){
 		}
 	});
 }
+
+
+function logout() {
+	console.log("logging out");
+	var baseURL="/Project1/";
+	var xhttp=new XMLHttpRequest();
+	xhttp.onreadystatechange=finish;
+	xhttp.open("DELETE", baseURL+"login");
+	xhttp.send();
+	
+	function finish(){
+		if(xhttp.readyState===4){
+			console.log("logged out");
+		}
+	}
+}
+
 
 
 /*

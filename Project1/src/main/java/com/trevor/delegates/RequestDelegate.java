@@ -49,9 +49,9 @@ public class RequestDelegate implements FrontControllerDelegate {
 			return;
 		case "PUT":
 			// Update the request in the database
-			newRequest = JsonParseUtil.parseJsonInput(req.getInputStream(), Request.class, resp);
-			ro.updateRequest(newRequest, emp, true);
-			writer.write(om.writeValueAsString(newRequest));
+			//newRequest = JsonParseUtil.parseJsonInput(req.getInputStream(), Request.class, resp);
+			//ro.updateRequest(newRequest, emp, true);
+			//writer.write(om.writeValueAsString(newRequest));
 			return;
 		default:
 			resp.sendError(HttpServletResponse.SC_BAD_REQUEST);
@@ -89,7 +89,6 @@ public class RequestDelegate implements FrontControllerDelegate {
 					resp.sendError(HttpServletResponse.SC_CONFLICT);
 				}
 				return;
-			
 				
 			}
 			else if("0".equals(switchVar)) {
@@ -103,11 +102,40 @@ public class RequestDelegate implements FrontControllerDelegate {
 			else if ("1".equals(switchVar)) {
 				
 				log.trace("Retrieving all requests from the database");
+				log.trace("switchvar EMP" + emp);
 				Set<Request> requests = ro.getRequests2(emp);
 				log.trace("Request = null:" + requests==null);
 				resp.getWriter().write(om.writeValueAsString(requests));
 				return;
 			}
+			else if ("4".equals(switchVar)) {
+				// Update the request in the database
+				//log.trace(req.getParameter("requestid"));
+				int requestId = Integer.parseInt(req.getParameter("requestid"));
+				String eventType = req.getParameter("eventtype");
+				//log.trace("requestId" + requestId);
+				//log.trace("eventType" + eventType);
+				switch(eventType){
+					case "Accept":
+						ro.updateRequest(requestId, emp, true);
+						break;
+					case "Decline":
+						ro.updateRequest(requestId, emp, false);
+						break;
+					case "Request Comment":
+						
+						break;
+				}
+			
+				return;
+			}
+			
+			else if("7".equals(switchVar)) {
+				int requestId = Integer.parseInt(req.getParameter("requestid"));
+				String comment = req.getParameter("comment");
+			}
+		case "PUT":
+
 		default: resp.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
 		}
 	}

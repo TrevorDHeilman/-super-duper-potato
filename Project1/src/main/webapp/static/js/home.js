@@ -1,5 +1,3 @@
-var requestIds = [];
-
 window.onload = function () {
     getRequests(0);
     
@@ -9,7 +7,21 @@ window.onload = function () {
 		addRequestForm(3);
 	});
 	
+	var updatebutton = document.getElementById("submitupdatebutton");
+	updatebutton.addEventListener('click', function(event){
+		event.preventDefault();
+		updateRequest(4);
+	})
+	
+	var cancelbutton = document.getElementById("logoutbutton");
+	cancelbutton.addEventListener('click', function(event){
+		event.preventDefault();
+		logout();
+	})
+	
 	getRequests(1)
+	
+	addNewCommentForm(7);
 }
 
 function getRequests(i) {
@@ -22,7 +34,8 @@ function getRequests(i) {
     function displayRequests() {
         if (xhttp.readyState === 4 && xhttp.status === 200) {
             requests = JSON.parse(xhttp.responseText);
-            console.log(requests);
+            //console.log(requests);
+            //console.log(i);
             requests.forEach(function (request) {
                 if(i==0){
                 	addRequestsToTable(request);	
@@ -42,7 +55,6 @@ function addRequestsToTable(request) {
     let td;
     //Request ID
     addTableDef(request.requestId, tr);
-    requestIds.push(request.requestId)
     //Employee ID
     addTableDef(request.employeeId, tr);
     //Event Date
@@ -54,7 +66,8 @@ function addRequestsToTable(request) {
     // actually append the row to the table. 
     table.appendChild(tr);
 }
-function addRequestsToTable(request) {
+function addRequestsToTable2(request) {
+	let requestIds = [];
     var table = document.getElementById("requests2");
     var tr = document.createElement("tr");
     let td;
@@ -71,11 +84,15 @@ function addRequestsToTable(request) {
     addTableDef(request.status, tr);
     // actually append the row to the table. 
     table.appendChild(tr);
-    
+      	
     var select = document.getElementById("requestidselect");
+    
+    
     var i;
-    for(i = 0; i < requestId.length; i++){
-    	var opt = requestIds[i];
+    let uniqueIds = requestIds//.filter(distinct);
+    //console.log(uniqueIds);
+    for(i = 0; i < uniqueIds.length; i++){
+    	var opt = uniqueIds[i];
     	var el = document.createElement("option");
     	el.textContent = opt;
     	el.value = opt;
@@ -101,27 +118,92 @@ function addListToTable(tr, list, parser){
     tr.appendChild(td);
 }
 
+function updateRequest(i){
+	
+	var baseURL="/Project1/";
+    let requestId = document.getElementById("requestidselect").value;
+    let eventtype = document.getElementById("eventtype").value;
+    console.log(requestId);
+    console.log(eventtype);
+    var xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange = createRequestSuccess;
+    xhttp.open("POST", baseURL + "requests"); 
+    xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+    xhttp.send("type="+i+"&requestid="+requestId+"&eventtype="+eventtype);
+    
+	function createRequestSuccess() {
+		if(xhttp.readyState===4 && xhttp.status===200) {
+			var data = JSON.parse(xhttp.responseText);
+			if(data){
+				console.log("Update Successful");
+				window.location.href=baseURL +"static/home.html";
+			}
+		}
+	}
+}
+
+function logout() {
+	console.log("logging out");
+	var baseURL="/Project1/";
+	var xhttp=new XMLHttpRequest();
+	xhttp.onreadystatechange=finish;
+	xhttp.open("DELETE", baseURL+"login");
+	xhttp.send();
+	
+	function finish(){
+		if(xhttp.readyState===4){
+			console.log("logged out");
+			window.location.href="http://localhost:8080/Project1/static/login.html";
+		}
+	}
+}
+
+function addNewCommentForm(i){
+	
+	var baseURL="/Project1/";
+    let requestId = document.getElementById("requestidcomment").value;
+    let comment = document.getElementById("requestcomment").value;
+    console.log(requestId);
+    console.log(comment);
+    var xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange = createRequestSuccess;
+    xhttp.open("POST", baseURL + "requests"); 
+    xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+    xhttp.send("type="+i+"&requestid="+requestId+"&comment="+comment);
+    
+	function createRequestSuccess() {
+		if(xhttp.readyState===4 && xhttp.status===200) {
+			var data = JSON.parse(xhttp.responseText);
+			if(data){
+				console.log("Comment Successful");
+				window.location.href=baseURL +"static/home.html";
+			}
+		}
+	}
+}
+
 function addRequestForm(i){
 	let div = document.createElement("div");
 	div.innerHTML=newRequestForm;
 	let body = document.getElementsByTagName("body")[0];
 	if(document.getElementById("form")){
 	
+		console.log(document.getElementById("reimbursementamount"));
 		var requestJSON = {"appliedreimbursement":document.getElementById("reimbursementamount").value, 
 						   "eventDate":document.getElementById("eventdate").value, 
-						   "eventType":document.getElementById("eventtype").value};
+						   "eventType":document.getElementById("eventtypeselector").value};
 		var baseURL="/Project1/";
 		var xhttp = new XMLHttpRequest();
 	    xhttp.onreadystatechange = createRequestSuccess;
 	    xhttp.open("POST", baseURL + "requests"); 
-	    console.log(JSON.stringify(requestJSON));
+	    //console.log(JSON.stringify(requestJSON));
 	    xhttp.send(JSON.stringify(requestJSON));
 	    
 		function createRequestSuccess() {
 			if(xhttp.readyState===4 && xhttp.status===200) {
 				var data = JSON.parse(xhttp.responseText);
 				if(data){
-					console.log("Request Successful");
+					//console.log("Request Successful");
 					window.location.href=baseURL +"static/home.html";
 				}
 			}
@@ -129,7 +211,8 @@ function addRequestForm(i){
 	}
 	else{
 		body.appendChild(div);
-		document.getElementById("newrequestbutton").innerHTML = "submit";
+		var button = document.getElementById("newrequestbutton");
+		button.innerHTML = "submit";
 	}
 }
 
@@ -139,7 +222,7 @@ var newRequestForm = `
      	<br>
      	Event Date: <input type = "date" name = "eventdate" id="eventdate"/>
      	<br>
-     	Event Type: <select name="eventtype" id="eventtype">
+     	Event Type: <select name="eventtypeselector" id="eventtypeselector">
      					<option value=1>Not Selected</option>
 							<option value=2>University Course</option>
 							<option value=3>Seminar</option>
@@ -161,41 +244,21 @@ var newRequestForm = `
   	</form>
 `;
 
-var submitRequestUpdateForm = `
-	<form id = "form">
-     	Value of Reimbursement: <input type = "number" name = "reimbursementamount" id="reimbursementamount" />
-     	<br>
-     	Request ID: <select name="requestidselect" id="requestidselect">
-     					<option value=1>None</option>
-					</select>
-     	<br>
-     	Actione: <select name="eventtype" id="eventtype">
-     					<option value=1>Accept</option>
-						<option value=2>Decline</option>
-						<option value=3>Request Comment</option>
-					</select>
-		<br>
-		<button id ="submitbutton" class="w3-button w3-round-large">Cancel</button>
-		
-		<script>
-			document.getElementById("cancelbutton").addEventListener("click", function(event){
-				event.preventDefault();
-				console.log("Makes it here");
-				document.removeElementById("form").
-			});
-		</script>
+var newCommentForm = `
+	<form id = "commentform">
+		<div class="row">
+			<div class="col">
+				Request ID: <select name="requestidcomment" id="requestidcomment">
+		     				<option value=0> None</option>
+							</select>
+			</div>
+			
+			<div class="col">
+				<button id ="savecomment" class="w3-button w3-round-large">Save</button>
+			</div>
+		</div>
+								
+     	Comment: <input type = "number" name = "requestcomment" id="requestcomment" />
+
   	</form>
 `;
-
-
-/*
-var select = document.getElementById("requestidselect");
-var i;
-for(i = 0; i < requestId.length; i++){
-	var opt = requestIds[i];
-	var el = document.createElement("option");
-	el.textContent = opt;
-	el.value = opt;
-	select.appendChild(el);
-}
-*/

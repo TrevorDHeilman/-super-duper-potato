@@ -1,5 +1,7 @@
 package com.trevor.data;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Set;
 
 import com.trevor.beans.Employee;
@@ -10,7 +12,9 @@ public interface RequestDAO {
 	Request getRequestById(int requestId);
 	Set<Request> getRequests(Employee emp);
 	Set<Request> getRequests2(Employee emp);
-	void updateRequest(Request request, Employee emp, boolean newStatus);
+	void updateRequest(int requestid, Employee emp, boolean newStatus);
 	int addRequest(Request newRequest, Employee emp);
-	void requestFurtherComments(int requestId);
+	void requestFurtherComments(int requestId, int SendRequestTo);
+	void printResultSet(ResultSet rs) throws SQLException;
+	void saveComment(int requestId, String comment);
 }

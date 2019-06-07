@@ -36,16 +36,37 @@
         </table>		
 	</div>
 	<br><br>
-	<div>
+	<div id="actiononrequest">
+		<form id = "form2">
+			<div class="row">
+				<div class="col">
+		     		Request ID: <select name="requestidselect" id="requestidselect">
+		     						<option value=0> None</option>
+								</select>
+		     	</div>
+		     	
+		     	<div class="col">
+		     		Action: <select name="eventtype" id="eventtype">
+		     					<option value= "Accept">Accept</option>
+								<option value= "Decline">Decline</option>
+								<option value= "Request Comment">Request Comment</option>
+							</select>
+				</div>			
+				
+				<div class="col">
+					<button id ="submitupdatebutton" class="w3-button w3-round-large">Submit</button>
+				</div>
+			</div>
+	  	</form>
+	</div>
+	<div id="requestforcommentsdiv">
+		
+	
 	
 	</div>
 	<div>
 	<br><br><br><br><br><br>
 		<button id ="newrequestbutton" class="w3-button w3-round-large" style="float: right">New Request</button>
-		
-
-	
-	
 	</div>
 </body>
 </html>

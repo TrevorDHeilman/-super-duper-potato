@@ -3,9 +3,8 @@ package com.trevor.data;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -28,7 +27,7 @@ public class RequestOracle implements RequestDAO{
 		Request request = null;
 		log.trace("Retrieving request from database.");
 		try (Connection conn = cu.getConnection()) {
-			String sql = "select employeeid, appliedreimbursement, requestdate, eventdate, status, eventtype from request where requestid=?";
+			String sql = "select employeeid, appliedreimbursement, requestdate, eventdate, statusid, eventtype from request where requestid=?";
 
 			PreparedStatement pstm = conn.prepareStatement(sql);
 			pstm.setInt(1, requestId);
@@ -60,6 +59,7 @@ public class RequestOracle implements RequestDAO{
 			PreparedStatement pstm = conn.prepareStatement(sql);
 			pstm.setInt(1, emp.getEmployeeId());
 			ResultSet rs = pstm.executeQuery();
+					
 			while (rs.next()) {
 				
 				Request request = new Request();
@@ -83,12 +83,36 @@ public class RequestOracle implements RequestDAO{
 	@Override
 	public Set<Request> getRequests2(Employee emp) {
 		Set<Request> requestList = new HashSet<Request>();
+		ArrayList<Integer> bencoKeys = new ArrayList<>(Arrays.asList(3, 6));
 		log.trace("retrieving all requests from database.");
 		try (Connection conn = cu.getConnection()) {
 			String sql = "select * from request where statusid=?";
 			PreparedStatement pstm = conn.prepareStatement(sql);
+			log.trace("bencoKeys.contains(emp.getTitleId())" + bencoKeys.contains(emp.getTitleId()));
+			if(bencoKeys.contains(emp.getTitleId())) {
+				pstm.setInt(1, 4);
+				ResultSet rs = pstm.executeQuery();
+				//printResultSet(rs);
+				while (rs.next()) {
+					
+					log.trace("Getting in result set");
+					Request request = new Request();
+					request.setRequestId(rs.getInt("requestid"));
+					request.setEmployeeId(rs.getInt("employeeid"));
+					request.setAppliedreimbursement(rs.getInt("appliedreimbursement"));
+					request.setRequestDate(rs.getDate("requestdate"));
+					request.setEventDate(rs.getDate("eventdate"));
+					request.setStatus(rs.getString("statusid"));
+					request.setEventType(rs.getInt("eventtype"));
+					log.trace("Adding Request to the list");
+					requestList.add(request);
+				}
+			}
+			
 			pstm.setInt(1, emp.getEmployeeId());
+			
 			ResultSet rs = pstm.executeQuery();
+			//printResultSet(rs);
 			while (rs.next()) {
 				
 				log.trace("Getting in result set");
@@ -111,23 +135,31 @@ public class RequestOracle implements RequestDAO{
 	}
 	
 	@Override
-	public void updateRequest(Request request, Employee emp, boolean newStatus) {
-		log.trace("updating request in database: " + request);
+	public void updateRequest(int requestid, Employee emp, boolean newStatus) {
 		Connection conn = cu.getConnection();
+		String booleanStr;
 		ArrayList<Integer> deptHeadKeys = new ArrayList<>(Arrays.asList(101, 102, 103));
+		Request request = getRequestById(requestid);
+		log.trace("updating request in database: " + request);
+
 		try {
 			conn.setAutoCommit(false);
-			String sql = "update request set status=? where requestid=?";
+			String sql = "update request set statusid=? where requestid=?";
 			PreparedStatement pstm = conn.prepareStatement(sql);
 			if(newStatus) {
 				
+				booleanStr = "Approved";
 				String sqlQuery = "select * from employee where employeeid=?";
 				PreparedStatement pstmQuery = conn.prepareStatement(sqlQuery);
 				pstmQuery.setInt(1, request.getEmployeeId());
 				ResultSet rs = pstmQuery.executeQuery();
 				if (rs.next()) {
 					
-					if(emp.getEmployeeId() == rs.getInt("reportsto") && !deptHeadKeys.contains(emp.getReportsTo())){
+					if("4".equals(request.getStatus())) {
+					
+						pstm.setInt(1,2);
+					}
+					else if(emp.getEmployeeId() == rs.getInt("reportsto") && !deptHeadKeys.contains(emp.getReportsTo())){
 						
 						pstm.setInt(1, emp.getReportsTo());
 					}
@@ -138,6 +170,7 @@ public class RequestOracle implements RequestDAO{
 				}
 			}
 			else {
+				booleanStr = "Declined";
 				pstm.setInt(1, 3);
 			}
 			
@@ -147,10 +180,11 @@ public class RequestOracle implements RequestDAO{
 			if (result == 1) {
 				log.trace("Request updated");
 				
-				String setRequestStory = "Insert into RequestStory (RequestId, EmployeeId) VALUES (?, ?)";
+				String setRequestStory = "Insert into RequestStory (RequestId, EmployeeId, Action) VALUES (?, ?, ?)";
 				PreparedStatement ptsmRequestStory = conn.prepareStatement(setRequestStory);
 				ptsmRequestStory.setInt(1, request.getRequestId());
 				ptsmRequestStory.setInt(2, emp.getEmployeeId());
+				ptsmRequestStory.setString(3, booleanStr);
 				ptsmRequestStory.executeQuery();				
 			}
 			else {
@@ -206,8 +240,49 @@ public class RequestOracle implements RequestDAO{
 	}
 
 	@Override
-	public void requestFurtherComments(int requestId) {
-		// TODO Auto-generated method stub
+	public void requestFurtherComments(int requestId, int sendRequestTo) {
 		
+		log.trace("Adding comment to the request.");
+		try (Connection conn = cu.getConnection()) {
+			String sql = "update requeststory set employeecomment=? where requestid=?";
+			PreparedStatement pstm = conn.prepareStatement(sql);
+			pstm.setString(1, Integer.toString(sendRequestTo));
+			pstm.setInt(2, requestId);
+			ResultSet rs = pstm.executeQuery();
+		}
+		catch (Exception e) {
+			LogUtil.logException(e, RequestOracle.class);
+		}	
+	}
+	
+	@Override
+	public void saveComment(int requestId, String comment) {
+		
+		log.trace("Adding comment to the request.");
+		try (Connection conn = cu.getConnection()) {
+			String sql = "update requeststory set employeecomment=? where requestid=?";
+			PreparedStatement pstm = conn.prepareStatement(sql);
+			pstm.setString(1, comment);
+			pstm.setInt(2, requestId);
+			ResultSet rs = pstm.executeQuery();
+		}
+		catch (Exception e) {
+			LogUtil.logException(e, RequestOracle.class);
+		}	
+	}
+		
+	@Override
+	public void printResultSet(ResultSet rs) throws SQLException {
+		   ResultSetMetaData rsmd = rs.getMetaData();
+		   System.out.println("querying SELECT * FROM XXX");
+		   int columnsNumber = rsmd.getColumnCount();
+		   while (rs.next()) {
+		       for (int i = 1; i <= columnsNumber; i++) {
+		           if (i > 1) System.out.print(",  ");
+		           String columnValue = rs.getString(i);
+		           System.out.print(columnValue + " " + rsmd.getColumnName(i));
+		       }
+		       System.out.println("");
+		   }
 	}
 }
