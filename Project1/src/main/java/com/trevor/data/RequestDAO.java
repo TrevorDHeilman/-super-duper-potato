@@ -16,5 +16,5 @@ public interface RequestDAO {
 	int addRequest(Request newRequest, Employee emp);
 	void requestFurtherComments(int requestId, int SendRequestTo);
 	void printResultSet(ResultSet rs) throws SQLException;
-	void saveComment(int requestId, String comment);
+	void saveComment(int requestId, String comment, Employee emp);
 }

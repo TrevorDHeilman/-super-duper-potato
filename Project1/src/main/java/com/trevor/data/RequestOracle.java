@@ -133,7 +133,7 @@ public class RequestOracle implements RequestDAO{
 		log.trace(requestList);
 		return requestList;
 	}
-	
+		
 	@Override
 	public void updateRequest(int requestid, Employee emp, boolean newStatus) {
 		Connection conn = cu.getConnection();
@@ -256,14 +256,16 @@ public class RequestOracle implements RequestDAO{
 	}
 	
 	@Override
-	public void saveComment(int requestId, String comment) {
+	public void saveComment(int requestId, String comment, Employee emp) {
 		
 		log.trace("Adding comment to the request.");
 		try (Connection conn = cu.getConnection()) {
-			String sql = "update requeststory set employeecomment=? where requestid=?";
+			String sql = "update requeststory set employeecomment = ? where requestid = ? and employeeid = (select employeeid from requeststory where employeecomment = ? and requestid = ?)";
 			PreparedStatement pstm = conn.prepareStatement(sql);
 			pstm.setString(1, comment);
 			pstm.setInt(2, requestId);
+			pstm.setString(3, Integer.toString(emp.getEmployeeId()));
+			pstm.setInt(4, requestId);
 			ResultSet rs = pstm.executeQuery();
 		}
 		catch (Exception e) {

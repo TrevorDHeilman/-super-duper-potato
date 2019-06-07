@@ -9,16 +9,19 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import org.apache.log4j.Logger;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.trevor.beans.Comment;
 import com.trevor.beans.Employee;
 import com.trevor.beans.Request;
 import com.trevor.utils.JsonParseUtil;
 import com.trevor.utils.LogUtil;
+import com.trevor.data.CommentOracle;
 import com.trevor.data.RequestOracle;
 
 public class RequestDelegate implements FrontControllerDelegate {
 	private Logger log = Logger.getLogger(Request.class);
 	private ObjectMapper om = new ObjectMapper();
 	private RequestOracle ro = new RequestOracle();
+	private CommentOracle co = new CommentOracle();
 	
 	@Override
 	public void process(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
@@ -133,6 +136,17 @@ public class RequestDelegate implements FrontControllerDelegate {
 			else if("7".equals(switchVar)) {
 				int requestId = Integer.parseInt(req.getParameter("requestid"));
 				String comment = req.getParameter("comment");
+				log.trace("comment: " + comment);
+				ro.saveComment(requestId, comment, emp);
+				return;
+			}
+			
+			else if("9".equals(switchVar)) {
+				log.trace("Retrieving all requests from the database");
+				Set<Comment> requests = co.getRequests(emp);
+				log.trace("Request = null:" + requests==null);
+				resp.getWriter().write(om.writeValueAsString(requests));
+				return;
 			}
 		case "PUT":
 

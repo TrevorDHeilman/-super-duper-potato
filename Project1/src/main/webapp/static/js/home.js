@@ -21,8 +21,10 @@ window.onload = function () {
 	
 	getRequests(1)
 	
-	addNewCommentForm(7);
+	getRequests2(9);	
 }
+
+var commentids = [];
 
 function getRequests(i) {
 	var baseURL="/Project1/";
@@ -48,12 +50,54 @@ function getRequests(i) {
     }
 }
 
+function getRequests2(i) {
+	var baseURL="/Project1/";
+    var xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange = FindRequestSuccess;
+    xhttp.open("POST", baseURL + "requests");
+    xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+    xhttp.send("type="+i);
+	function FindRequestSuccess() {
+		if(xhttp.readyState===4 && xhttp.status===200) {
+			var data = JSON.parse(xhttp.responseText);
+			console.log(data);
+			if(data){
+				console.log("retrieving request Successful");
+		        data.forEach(function (request) {
+
+		        commentids.push(request.requestId);
+		        });
+		        
+		    	if(commentids.length >0){
+		    		addNewCommentForm();
+		    		var selectComment = document.getElementById("requestidcomment");
+		    		
+		    		var i;
+		    		for(i=0; i<commentids.length; i++){
+				        var newOption = commentids[i];
+				        var commentId = document.createElement("option");
+				    	commentId.textContent = newOption;
+				    	commentId.value = newOption;
+				    	selectComment.appendChild(commentId);
+		    		}
+		    		
+		    		var savebutton = document.getElementById("savecomment");
+		    		savebutton.addEventListener('click', function(event){
+		    			event.preventDefault();
+		    			saveComment(7);
+		    		})
+		    	}
+			}
+		}
+	}
+}
 
 function addRequestsToTable(request) {
     var table = document.getElementById("requests");
     var tr = document.createElement("tr");
     let td;
     //Request ID
+    console.log(request);
     addTableDef(request.requestId, tr);
     //Employee ID
     addTableDef(request.employeeId, tr);
@@ -119,7 +163,10 @@ function addListToTable(tr, list, parser){
 }
 
 function updateRequest(i){
-	
+	console.log(document.getElementById("eventtype").value);
+	//if(document.getElementById("eventtype").value == 'Request Comment'){
+	//	window.location.href="http://localhost:8080/Project1/static/comment.html";
+	//}
 	var baseURL="/Project1/";
     let requestId = document.getElementById("requestidselect").value;
     let eventtype = document.getElementById("eventtype").value;
@@ -158,7 +205,13 @@ function logout() {
 	}
 }
 
-function addNewCommentForm(i){
+function addNewCommentForm(){
+	
+	document.getElementById("requestforcommentsdiv").innerHTML = newCommentForm;
+	
+}
+
+function saveComment(i){
 	
 	var baseURL="/Project1/";
     let requestId = document.getElementById("requestidcomment").value;
@@ -173,19 +226,19 @@ function addNewCommentForm(i){
     
 	function createRequestSuccess() {
 		if(xhttp.readyState===4 && xhttp.status===200) {
-			var data = JSON.parse(xhttp.responseText);
-			if(data){
-				console.log("Comment Successful");
-				window.location.href=baseURL +"static/home.html";
-			}
+			
+			console.log("Comment Successful");
+			window.location.href=baseURL +"static/home.html";
 		}
 	}
 }
 
 function addRequestForm(i){
+
 	let div = document.createElement("div");
 	div.innerHTML=newRequestForm;
 	let body = document.getElementsByTagName("body")[0];
+	console.log(document.getElementById("form"));
 	if(document.getElementById("form")){
 	
 		console.log(document.getElementById("reimbursementamount"));
@@ -257,8 +310,8 @@ var newCommentForm = `
 				<button id ="savecomment" class="w3-button w3-round-large">Save</button>
 			</div>
 		</div>
-								
-     	Comment: <input type = "number" name = "requestcomment" id="requestcomment" />
+		<br>			
+     	Comment: <input type = "text" height = "50px" width = "100px"  name = "requestcomment" id="requestcomment" />
 
   	</form>
 `;

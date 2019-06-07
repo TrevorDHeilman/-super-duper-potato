@@ -7,9 +7,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-
 import org.apache.log4j.Logger;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.trevor.beans.Employee;
 import com.trevor.beans.Request;
@@ -24,6 +22,7 @@ public class CommentDelegate implements FrontControllerDelegate {
 	@Override
 	public void process(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
 		log.trace(req.getMethod() + " received by login delegate");
+		String path = (String) req.getAttribute("path");
 		HttpSession session = req.getSession();
 		Employee emp = (Employee) session.getAttribute("loggedEmployee");
 		PrintWriter writer = resp.getWriter();
@@ -31,14 +30,13 @@ public class CommentDelegate implements FrontControllerDelegate {
 		switch (req.getMethod()) {
 		case "GET":
 			log.trace("GET recieved by comment delegate");
-			//newRequest = ro.getRequestById(requestId);
-			//resp.getWriter().write(om.writeValueAsString(newRequest));
+			newRequest = ro.getRequestById(Integer.parseInt(path));
+			resp.getWriter().write(om.writeValueAsString(newRequest));
 			
 			break;
 		case "POST":
-			// logging in
 			log.trace("POST recieved by comment delegate");
-			//Employee emp = (Employee) session.getAttribute("loggedEmployee");
+			
 
 			break;
 		case "DELETE":
