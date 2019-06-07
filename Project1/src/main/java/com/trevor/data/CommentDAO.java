@@ -7,5 +7,6 @@ import com.trevor.beans.Employee;
 
 public interface CommentDAO {
 	
+	Set<Comment> getRequests(int requestid);
 	Set<Comment> getRequests(Employee emp);
 }

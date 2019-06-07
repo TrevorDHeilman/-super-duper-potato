@@ -240,14 +240,17 @@ public class RequestOracle implements RequestDAO{
 	}
 
 	@Override
-	public void requestFurtherComments(int requestId, int sendRequestTo) {
+	public void requestFurtherComments(int requestId, int sendRequestTo, Employee emp) {
 		
 		log.trace("Adding comment to the request.");
 		try (Connection conn = cu.getConnection()) {
-			String sql = "update requeststory set employeecomment=? where requestid=?";
+			String sql = "update requeststory set employeecomment = ?, action=? where requestid = ? and employeeid = (select employeeid from requeststory where employeeid = ? and requestid = ?)";
 			PreparedStatement pstm = conn.prepareStatement(sql);
 			pstm.setString(1, Integer.toString(sendRequestTo));
-			pstm.setInt(2, requestId);
+			pstm.setString(2, "Request Comment");
+			pstm.setInt(3, requestId);
+			pstm.setInt(4, emp.getEmployeeId());
+			pstm.setInt(5, requestId);
 			ResultSet rs = pstm.executeQuery();
 		}
 		catch (Exception e) {

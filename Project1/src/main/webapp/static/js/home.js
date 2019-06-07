@@ -164,9 +164,12 @@ function addListToTable(tr, list, parser){
 
 function updateRequest(i){
 	console.log(document.getElementById("eventtype").value);
-	//if(document.getElementById("eventtype").value == 'Request Comment'){
-	//	window.location.href="http://localhost:8080/Project1/static/comment.html";
-	//}
+	let strRequestId = document.getElementById("requestidselect").value;
+	
+	if(document.getElementById("eventtype").value == 'Request Comment'){
+		window.location.href="http://localhost:8080/Project1/static/comment.html?requestid="+strRequestId;
+	}
+	
 	var baseURL="/Project1/";
     let requestId = document.getElementById("requestidselect").value;
     let eventtype = document.getElementById("eventtype").value;
@@ -180,11 +183,11 @@ function updateRequest(i){
     
 	function createRequestSuccess() {
 		if(xhttp.readyState===4 && xhttp.status===200) {
-			var data = JSON.parse(xhttp.responseText);
-			if(data){
+			//var data = JSON.parse(xhttp.responseText);
+			//if(data){
 				console.log("Update Successful");
 				window.location.href=baseURL +"static/home.html";
-			}
+			//}
 		}
 	}
 }

@@ -2,7 +2,7 @@
 
 body{
 	
-	text-align: center;
+	text-align: left;
 }
 
 #form{
@@ -43,4 +43,12 @@ td{
 
 th{
 	width: 20%;
+}
+
+#reqid{
+	text align:left;
+}
+
+.col{
+	
 }

@@ -23,7 +23,35 @@ public class CommentOracle implements CommentDAO {
 		try (Connection conn = cu.getConnection()) {
 			String sql = "select * from requeststory where employeecomment=?";
 			PreparedStatement pstm = conn.prepareStatement(sql);
-			pstm.setInt(1, emp.getEmployeeId());
+			pstm.setString(1, Integer.toString(emp.getEmployeeId()));
+			ResultSet rs = pstm.executeQuery();
+					
+			while (rs.next()) {
+				
+				Comment comment = new Comment();
+				comment.setRequestId(rs.getInt("requestid"));
+				comment.setEmployeeId(rs.getInt("employeeid"));
+				comment.setAction(rs.getString("action"));
+				comment.setEmployeeComment(rs.getString("employeecomment"));
+
+				log.trace("Adding Request to the list");
+				requestList.add(comment);
+			}
+		} catch (Exception e) {
+			LogUtil.logException(e, RequestOracle.class);
+		}
+		log.trace(requestList);
+		return requestList;
+	}
+
+	@Override
+	public Set<Comment> getRequests(int requestid) {
+		Set<Comment> requestList = new HashSet<Comment>();
+		log.trace("retrieving all requests from database.");
+		try (Connection conn = cu.getConnection()) {
+			String sql = "select * from requeststory where requestid=?";
+			PreparedStatement pstm = conn.prepareStatement(sql);
+			pstm.setInt(1, requestid);
 			ResultSet rs = pstm.executeQuery();
 					
 			while (rs.next()) {

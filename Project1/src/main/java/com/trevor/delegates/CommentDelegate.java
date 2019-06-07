@@ -2,6 +2,7 @@ package com.trevor.delegates;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Set;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -9,14 +10,17 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import org.apache.log4j.Logger;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.trevor.beans.Comment;
 import com.trevor.beans.Employee;
 import com.trevor.beans.Request;
+import com.trevor.data.CommentOracle;
 import com.trevor.data.RequestOracle;
 
 public class CommentDelegate implements FrontControllerDelegate {
 
 	private Logger log = Logger.getLogger(Request.class);
 	private ObjectMapper om = new ObjectMapper();
+	private CommentOracle co = new CommentOracle();
 	private RequestOracle ro = new RequestOracle();
 	
 	@Override
@@ -28,24 +32,33 @@ public class CommentDelegate implements FrontControllerDelegate {
 		PrintWriter writer = resp.getWriter();
 		Request newRequest;
 		switch (req.getMethod()) {
-		case "GET":
-			log.trace("GET recieved by comment delegate");
-			newRequest = ro.getRequestById(Integer.parseInt(path));
-			resp.getWriter().write(om.writeValueAsString(newRequest));
-			
-			break;
 		case "POST":
 			log.trace("POST recieved by comment delegate");
+			String switchVar = req.getParameter("type");
+			log.trace("switchVar " + switchVar);
+			if("1".equals(switchVar)) {
 			
+				newRequest = ro.getRequestById(Integer.parseInt(req.getParameter("requestid")));
+				log.trace("Request = null:" + newRequest==null);
+				resp.getWriter().write(om.writeValueAsString(newRequest));
+				return;
+			}
+			else if("2".equals(switchVar)) {
+				
+				Set<Comment> newComment = co.getRequests(Integer.parseInt(req.getParameter("requestid")));
+				log.trace("Request = null:" + newComment==null);
+				resp.getWriter().write(om.writeValueAsString(newComment));
+				return;
+			}
+			else if("3".equals(switchVar)) {
+				
+				String newRequestid = req.getParameter("requestid");
+				String selectedEmployee = req.getParameter("selectedEmployee");
+				ro.requestFurtherComments(Integer.parseInt(newRequestid), Integer.parseInt(selectedEmployee), emp);
+				return;
+			}
+			break;
 
-			break;
-		case "DELETE":
-			// logging out
-			log.trace("DELETE recieved by comment delegate");
-			session.invalidate();
-			// dissociate an id with a session and response says to delete cookie
-			log.trace("User logged out");
-			break;
 		default:
 			break;
 		}
